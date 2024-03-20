@@ -1,0 +1,56 @@
+<div [formGroup]="form">
+  <div class="card-container">
+    <mat-card class="my-panel">
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Trigger</mat-panel-title>
+        </mat-expansion-panel-header>
+        <form [formGroup]="trigger" (ngSubmit)="onSubmit()">
+          <div class="form-field-container">
+            <mat-form-field appearance="fill">
+              <mat-label>Trigger Type</mat-label>
+              <mat-select formControlName="triggerType">
+                <mat-option *ngFor="let type of triggerTypes" [value]="type">{{ type }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          
+            <mat-form-field appearance="fill" *ngIf="trigger.get('triggerType')?.value === 'Webhook'">
+              <mat-label>URL</mat-label>
+              <input matInput formControlName="url" placeholder="Webhook URL">
+            </mat-form-field>
+          </div>
+          <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid">Save Trigger</button>
+        </form>
+      </mat-expansion-panel>
+    </mat-card>
+  </div>
+  
+  <!-- Actions Section -->
+  <div *ngFor="let action of actions.controls; let i = index" class="card-container" formArrayName="actions">
+    <mat-card class="my-panel">
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Action {{ i + 1 }}</mat-panel-title>
+        </mat-expansion-panel-header>
+        <div [formGroupName]="i" class="form-field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>Action Type</mat-label>
+            <mat-select formControlName="actionType">
+              <!-- You might have different action types, for now, we assume the same as trigger types -->
+              <mat-option *ngFor="let type of triggerTypes" [value]="type">{{ type }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        
+          <mat-form-field appearance="fill" *ngIf="action.get('actionType')?.value === 'Webhook'">
+            <mat-label>URL</mat-label>
+            <input matInput formControlName="url" placeholder="Webhook URL">
+          </mat-form-field>
+        </div>
+        <button [disabled]="i==0" mat-raised-button color="warn" (click)="removeAction(i)">Remove Action</button>
+        <button mat-raised-button color="primary" (click)="addAction(i+1)">Add Action</button>
+      </mat-expansion-panel>
+    </mat-card>
+  </div>
+  <!-- <button mat-raised-button color="primary" (click)="addAction()">Add Action</button> -->
+  
+</div>

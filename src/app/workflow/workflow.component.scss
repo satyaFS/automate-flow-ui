@@ -1,0 +1,18 @@
+.card-container {
+  display: flex;
+  // align-items: center; /* Vertical centering */
+  justify-content: center; /* Horizontal centering */
+  // min-height: 100vh; /* Make the container take up full viewport height (optional) */
+  padding-bottom: 1em;
+}
+
+.form-field-container {
+  display: flex;
+  flex-direction: column;  /* Arranges items vertically */
+  align-content: center; /* Aligns items along the left edge */
+}
+
+.my-panel {
+  width: 40%;
+  max-width: 80%/* Optional value - set a maximum width for responsiveness */
+}
