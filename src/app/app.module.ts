@@ -18,11 +18,17 @@ import { PlaygroundComponent } from './playground/playground.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatListModule } from '@angular/material/list';
+import { WorkflowListComponent } from './workflow-list/workflow-list.component';
+import { AddWorkflowDialogComponent } from './add-workflow-dialog/add-workflow-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
 @NgModule({
   declarations: [
     AppComponent,
     WorkflowComponent,
-    PlaygroundComponent
+    PlaygroundComponent,
+    WorkflowListComponent,
+    AddWorkflowDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -40,7 +46,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     NgxGraphModule,
     MatCardModule,
     MatExpansionModule,
-    MatFormFieldModule
+    MatFormFieldModule,
+    MatListModule,
+    MatDialogModule
   ],
   providers: [],
   bootstrap: [AppComponent]

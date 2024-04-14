@@ -1,0 +1,24 @@
+.workflow-list-container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .workflow-list-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    align-items: center;
+    width: 80%;
+  }
+  
+  .workflow-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .workflow-card {
+    width: 300px;
+    margin: 10px;
+  }

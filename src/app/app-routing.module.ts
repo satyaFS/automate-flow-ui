@@ -1,10 +1,18 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { WorkflowComponent } from './workflow/workflow.component';
+import { WorkflowListComponent } from './workflow-list/workflow-list.component';
 
-const routes: Routes = [];
+const routes: Routes = [
+  { path: 'workflow', component: WorkflowComponent },
+  {path:'workflowlist', component:WorkflowListComponent},
+  { path: '**', redirectTo: '/workflowlist', pathMatch: 'full' },
+]
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {
+  //routes sample
+ }

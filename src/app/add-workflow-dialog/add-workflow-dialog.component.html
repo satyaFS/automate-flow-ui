@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Add Workflow</h2>
+<mat-dialog-content >
+  <form [formGroup]="workflowForm" class="workflow-form" >
+    <mat-form-field class="full-width">
+      <input matInput placeholder="Workflow Name" formControlName="name">
+    </mat-form-field>
+    <mat-form-field class="full-width">
+      <textarea matInput placeholder="Description" formControlName="description"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button (click)="onCancelClick()">Cancel</button>
+  <button mat-button [mat-dialog-close]="workflowForm.value" [disabled]="workflowForm.invalid" cdkFocusInitial>Add</button>
+</mat-dialog-actions>

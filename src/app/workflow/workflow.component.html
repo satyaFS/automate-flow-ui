@@ -59,6 +59,7 @@
             <input matInput formControlName="url" placeholder="Webhook URL">
           </mat-form-field>
         </div>
+        <button mat-raised-button color="primary">Save</button>
         <button [disabled]="i==0" mat-raised-button color="warn" (click)="removeAction(i)">Remove Action</button>
         <button mat-raised-button color="primary" (click)="addAction(i+1)">Add Action</button>
       </mat-expansion-panel>
