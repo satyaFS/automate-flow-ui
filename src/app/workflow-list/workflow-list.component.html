@@ -10,10 +10,10 @@
           <mat-icon matListIcon [ngStyle]="{'color': workflow.status === 'Active' ? 'green' : 'red'}">
             {{ workflow.status === 'Active' ? 'check_circle' : 'cancel' }}
           </mat-icon>
-          <mat-card-title>{{ workflow.name }}</mat-card-title>
+          <mat-card-title>{{ workflow.workflowName }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p>{{ workflow.description }}</p>
+          <p>{{ workflow.workflowDescription }}</p>
           <!-- Add more workflow details or actions as needed -->
         </mat-card-content>
       </mat-card>

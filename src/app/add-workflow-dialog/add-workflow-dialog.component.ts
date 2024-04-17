@@ -15,8 +15,8 @@ export class AddWorkflowDialogComponent implements OnInit {
     private fb: FormBuilder
   ) {
     this.workflowForm = this.fb.group({
-      name: ['', Validators.required],
-      description: ['']
+      workflowName: ['', Validators.required],
+      workflowDescription: ['']
     });
    }
 

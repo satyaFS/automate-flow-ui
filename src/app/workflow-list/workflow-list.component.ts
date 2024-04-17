@@ -14,9 +14,9 @@ export class WorkflowListComponent {
 
   }
   workflows = [
-    { id: 1, name: 'Workflow 1', description: 'This is a sample workflow', status: 'Active' },
-    { id: 2, name: 'Workflow 2', description: 'Another workflow example', status: 'Inactive' },
-    { id: 3, name: 'Workflow 3', description: 'Yet another workflow', status: 'Active' },
+    { id: 1, workflowName: 'Workflow 1', workflowDescription: 'This is a sample workflow', status: 'Active' },
+    { id: 2, workflowName: 'Workflow 2', workflowDescription: 'Another workflow example', status: 'Inactive' },
+    { id: 3, workflowName: 'Workflow 3', workflowDescription: 'Yet another workflow', status: 'Active' },
     // Add more workflows as needed
   ];
   selectedWorkflow: any;
@@ -25,7 +25,9 @@ export class WorkflowListComponent {
   }
   addWorkFlow(workflow:any) {
     //add workflow to backend, get it
+    workflow = {userId:"1234", ...workflow} // hardcoding userid temporarily
     this.appService.addWorkflow(workflow).subscribe(data => {
+      console.log(data)
       this.workflows.push(data);
       this.router.navigate(['/workflow'])
     }
@@ -36,19 +38,11 @@ export class WorkflowListComponent {
     dialogConfig.position = {
       top: '5%', // Set the top position of the dialog
     };
-  
-
     const dialogRef = this.dialog.open(AddWorkflowDialogComponent, dialogConfig);
-  
-  
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         // Handle the new workflow data
-        const newWorkflow = {
-          id: this.workflows.length + 1,
-          ...result
-        };
-        this.workflows.push(newWorkflow);
+       this.addWorkFlow(result)
       }
     });
   }

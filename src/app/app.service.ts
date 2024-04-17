@@ -6,9 +6,10 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AppService {
+  workflowBaseUrl = "http://localhost:8082/workflow"
 
   constructor(private http:HttpClient) { }
   public addWorkflow(workflow:any):Observable<any>{
-    return this.http.post("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",workflow);
+    return this.http.post(this.workflowBaseUrl,workflow);
   }
 }

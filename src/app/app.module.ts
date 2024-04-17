@@ -22,6 +22,7 @@ import { MatListModule } from '@angular/material/list';
 import { WorkflowListComponent } from './workflow-list/workflow-list.component';
 import { AddWorkflowDialogComponent } from './add-workflow-dialog/add-workflow-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { HttpClientModule } from '@angular/common/http';
 @NgModule({
   declarations: [
     AppComponent,
@@ -48,7 +49,8 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatExpansionModule,
     MatFormFieldModule,
     MatListModule,
-    MatDialogModule
+    MatDialogModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]
