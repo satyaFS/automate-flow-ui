@@ -10,16 +10,17 @@ import { AppService } from '../app.service';
   styleUrls: ['./workflow-list.component.scss']
 })
 export class WorkflowListComponent {
+  workflows:any[] = []
+  selectedWorkflow: any;
+  userId=1234
+
   constructor(private router:Router, public dialog: MatDialog, private appService:AppService){
 
   }
-  workflows = [
-    { id: 1, workflowName: 'Workflow 1', workflowDescription: 'This is a sample workflow', status: 'Active' },
-    { id: 2, workflowName: 'Workflow 2', workflowDescription: 'Another workflow example', status: 'Inactive' },
-    { id: 3, workflowName: 'Workflow 3', workflowDescription: 'Yet another workflow', status: 'Active' },
-    // Add more workflows as needed
-  ];
-  selectedWorkflow: any;
+  ngOnInit() {
+    this.getWorkflows()
+  }
+
   selectWorkflow(workflow: any) {
     this.selectedWorkflow = workflow;
   }
@@ -45,5 +46,10 @@ export class WorkflowListComponent {
        this.addWorkFlow(result)
       }
     });
+  }
+  getWorkflows() {
+    this.appService.getWorkFlowsByUserId(this.userId).subscribe(data=>{
+      this.workflows = data
+    })
   }
 }
