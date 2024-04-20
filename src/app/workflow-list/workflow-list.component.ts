@@ -52,4 +52,7 @@ export class WorkflowListComponent {
       this.workflows = data
     })
   }
+  navigateToWorkflow(id:any){
+    this.router.navigate(['/workflow', id]);
+  }
 }

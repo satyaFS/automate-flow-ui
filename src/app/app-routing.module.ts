@@ -4,7 +4,7 @@ import { WorkflowComponent } from './workflow/workflow.component';
 import { WorkflowListComponent } from './workflow-list/workflow-list.component';
 
 const routes: Routes = [
-  { path: 'workflow', component: WorkflowComponent },
+  { path: 'workflow/:id', component: WorkflowComponent },
   {path:'workflowlist', component:WorkflowListComponent},
   { path: '**', redirectTo: '/workflowlist', pathMatch: 'full' },
 ]

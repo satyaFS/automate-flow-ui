@@ -5,7 +5,7 @@
       </button>
     </div>
     <div class="workflow-list">
-      <mat-card *ngFor="let workflow of workflows" class="workflow-card">
+      <mat-card (click)="navigateToWorkflow(workflow.workflowId)" *ngFor="let workflow of workflows" class="workflow-card">
         <mat-card-header>
           <mat-icon matListIcon [ngStyle]="{'color': workflow.status === 'Active' ? 'green' : 'red'}">
             {{ workflow.status === 'Active' ? 'check_circle' : 'cancel' }}
