@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { FloatLabelType } from '@angular/material/form-field';
 import { Action } from './action.interface';
+import { ActivatedRoute } from '@angular/router';
+import { AppService } from '../app.service';
 
 @Component({
   selector: 'app-workflow',
@@ -12,8 +14,10 @@ export class WorkflowComponent {
   form: FormGroup;
   triggerTypes = ['Webhook']; // Initially Webhook only{}
   actionRequestTypes = ['GET', 'POST', 'PUT', 'DELETE']
-actionTypes: any;
-  constructor(private fb:FormBuilder){
+  actionTypes = ['REST API'];
+  workflowId = ''
+
+  constructor(private fb:FormBuilder, private activatedRout:ActivatedRoute, private appService:AppService){
     this.form = this.fb.group({
       trigger: this.fb.group({ // Separate FormGroup for the trigger
         triggerType: ['Webhook', Validators.required],
@@ -24,15 +28,14 @@ actionTypes: any;
   }
   ngOnInit() {
    
-    // Dynamically control 'url' field visibility
-    this.form.get('triggerType')?.valueChanges.subscribe(selectedType => {
-      if (selectedType === 'Webhook') {
-        this.form.get('url')?.enable();
-      } else {
-        this.form.get('url')?.disable();
-        this.form.get('url')?.reset(); // Clear on type change
-      }
-    });
+    this.activatedRout.paramMap.subscribe(it=>{
+       this.workflowId= it.get("id") || ''
+       console.log(this.workflowId)
+       if(this.workflowId != '') {
+        this.initTriggerData();
+       }
+
+    })
     this.addAction()
   }
 
@@ -45,10 +48,11 @@ actionTypes: any;
   }
   addAction(index?:number) {
     const actionGroup = this.fb.group({
-      actionType: ['Webhook', Validators.required], // Assume 'Webhook' for simplicity, extend as needed
+      actionType: ['REST API', Validators.required],
       url: ['', [Validators.required, Validators.pattern(/http:\/\/|https:\/\//)]],
       passPrevData:[''],
-      requestType: ['', Validators.required]
+      requestType: ['', Validators.required],
+      payLoad:['', Validators.required]
     });
     if (index !== undefined) {
       this.actions.insert(index, actionGroup);
@@ -66,6 +70,13 @@ actionTypes: any;
     if (this.form.valid) {
       // Process form data
     }
+  }
+
+  initTriggerData() {
+    this.appService.getTriggerByWorkflowId(this.workflowId).subscribe(data=>{
+      console.log(data)
+      this.trigger.get('url')?.setValue(data.url);
+    })
   }
 
 }

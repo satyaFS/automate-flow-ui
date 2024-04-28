@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class AppService {
   workflowBaseUrl = "http://localhost:8082/workflow"
+  triggerBaseUrl = "http://localhost:8083/triggers"
 
   constructor(private http:HttpClient) { }
   public addWorkflow(workflow:any):Observable<any>{
@@ -15,5 +16,10 @@ export class AppService {
 
   public getWorkFlowsByUserId(userId:any) {
     return this.http.get<any>(this.workflowBaseUrl+"/user/" + userId);
+  }
+
+  //trigger 
+  public getTriggerByWorkflowId(triggerId:string) {
+    return this.http.get<any>(this.triggerBaseUrl+"/workflow/"+triggerId);
   }
 }
