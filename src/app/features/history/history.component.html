@@ -1,0 +1,240 @@
+<div class="history-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">Execution History</h1>
+            <p class="page-header__subtitle">
+                Monitor and debug your workflow executions
+            </p>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <div class="filters-bar__search">
+            <mat-icon>search</mat-icon>
+            <input type="text" placeholder="Search workflows..." [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()" />
+        </div>
+
+        <div class="filters-bar__tabs">
+            <button class="filter-tab" [class.active]="statusFilter === 'all'" (click)="onStatusFilterChange('all')">
+                All
+            </button>
+            <button class="filter-tab" [class.active]="statusFilter === 'success'"
+                (click)="onStatusFilterChange('success')">
+                <span class="status-dot status-dot--success"></span>
+                Success
+            </button>
+            <button class="filter-tab" [class.active]="statusFilter === 'error'"
+                (click)="onStatusFilterChange('error')">
+                <span class="status-dot status-dot--error"></span>
+                Failed
+            </button>
+            <button class="filter-tab" [class.active]="statusFilter === 'running'"
+                (click)="onStatusFilterChange('running')">
+                <span class="status-dot status-dot--running"></span>
+                Running
+            </button>
+        </div>
+
+        <div class="filters-bar__date">
+            <select [(ngModel)]="dateFilter" (ngModelChange)="onDateFilterChange($event)">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">Last 7 Days</option>
+                <option value="month">Last 30 Days</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <div class="skeleton-table">
+            <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+    </div>
+
+    <!-- Executions Table -->
+    <div class="executions-table" *ngIf="!isLoading && filteredExecutions.length > 0">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Workflow</th>
+                    <th>Trigger</th>
+                    <th>Started</th>
+                    <th>Duration</th>
+                    <th>Steps</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let execution of filteredExecutions" [class]="'row--' + execution.status"
+                    [class.row--selected]="selectedExecution?.id === execution.id" (click)="selectExecution(execution)">
+                    <td class="cell-status">
+                        <span class="status-badge" [class]="'status-badge--' + execution.status">
+                            <mat-icon>{{ getStatusIcon(execution.status) }}</mat-icon>
+                            {{ execution.status | titlecase }}
+                        </span>
+                    </td>
+                    <td class="cell-workflow">
+                        <span class="workflow-name">{{ execution.workflowName }}</span>
+                    </td>
+                    <td class="cell-trigger">
+                        <span class="trigger-name">{{ execution.trigger }}</span>
+                    </td>
+                    <td class="cell-time">
+                        <span class="time-ago">{{ getTimeAgo(execution.startedAt) }}</span>
+                        <span class="time-full">{{ execution.startedAt | date:'short' }}</span>
+                    </td>
+                    <td class="cell-duration">
+                        {{ formatDuration(execution.duration) }}
+                    </td>
+                    <td class="cell-steps">
+                        <span class="steps-count">
+                            {{ execution.stepsCompleted }}/{{ execution.totalSteps }}
+                        </span>
+                    </td>
+                    <td class="cell-actions">
+                        <button class="btn btn--ghost btn--sm"
+                            (click)="viewWorkflow(execution.workflowId); $event.stopPropagation()"
+                            matTooltip="View Workflow">
+                            <mat-icon>open_in_new</mat-icon>
+                        </button>
+                        <button class="btn btn--ghost btn--sm" *ngIf="execution.status === 'error'"
+                            (click)="retryExecution(execution); $event.stopPropagation()" matTooltip="Retry">
+                            <mat-icon>refresh</mat-icon>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+            <button class="pagination__btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+                <mat-icon>chevron_left</mat-icon>
+            </button>
+
+            <button *ngFor="let page of getPageNumbers()" class="pagination__btn"
+                [class.pagination__btn--active]="page === currentPage" (click)="goToPage(page)">
+                {{ page }}
+            </button>
+
+            <button class="pagination__btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+                <mat-icon>chevron_right</mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && filteredExecutions.length === 0">
+        <div class="empty-state__icon">
+            <mat-icon>history</mat-icon>
+        </div>
+        <h3 class="empty-state__title">No executions found</h3>
+        <p class="empty-state__description">
+            {{ searchQuery || statusFilter !== 'all'
+            ? 'Try adjusting your filters to find what you\'re looking for.'
+            : 'Your workflow executions will appear here when they run.' }}
+        </p>
+    </div>
+
+    <!-- Execution Details Panel -->
+    <div class="details-panel" [class.details-panel--open]="selectedExecution">
+        <div class="details-panel__header" *ngIf="selectedExecution">
+            <div class="details-panel__title-row">
+                <div class="details-panel__status" [class]="'details-panel__status--' + selectedExecution.status">
+                    <mat-icon>{{ getStatusIcon(selectedExecution.status) }}</mat-icon>
+                </div>
+                <div>
+                    <h3 class="details-panel__title">{{ selectedExecution.workflowName }}</h3>
+                    <span class="details-panel__subtitle">
+                        {{ selectedExecution.startedAt | date:'medium' }}
+                    </span>
+                </div>
+            </div>
+            <button class="btn btn--ghost btn--icon" (click)="closeDetails()">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+
+        <div class="details-panel__content" *ngIf="selectedExecution && !isLoadingDetails">
+            <!-- Error Alert -->
+            <div class="error-alert" *ngIf="selectedExecution.status === 'error'">
+                <mat-icon>error</mat-icon>
+                <div class="error-alert__content">
+                    <span class="error-alert__title">Execution Failed</span>
+                    <span class="error-alert__message">{{ selectedExecution.errorMessage }}</span>
+                </div>
+                <button class="btn btn--secondary btn--sm" (click)="retryExecution(selectedExecution)">
+                    <mat-icon>refresh</mat-icon>
+                    Retry
+                </button>
+            </div>
+
+            <!-- Steps Timeline -->
+            <div class="steps-timeline">
+                <h4 class="steps-timeline__title">Execution Steps</h4>
+
+                <div class="step-item" *ngFor="let step of executionSteps; let last = last"
+                    [class]="'step-item--' + step.status">
+                    <div class="step-item__connector" *ngIf="!last"></div>
+
+                    <div class="step-item__icon">
+                        <mat-icon>{{ step.connectorIcon }}</mat-icon>
+                    </div>
+
+                    <div class="step-item__content">
+                        <div class="step-item__header">
+                            <span class="step-item__name">{{ step.name }}</span>
+                            <span class="step-item__status">
+                                <mat-icon>{{ getStatusIcon(step.status) }}</mat-icon>
+                                {{ step.status | titlecase }}
+                            </span>
+                        </div>
+
+                        <div class="step-item__meta">
+                            <span *ngIf="step.duration">Duration: {{ formatDuration(step.duration) }}</span>
+                            <span *ngIf="step.status === 'running'" class="running-indicator">
+                                <mat-icon class="animate-spin">sync</mat-icon>
+                                In Progress...
+                            </span>
+                        </div>
+
+                        <!-- Error Details -->
+                        <div class="step-item__error" *ngIf="step.errorMessage">
+                            <mat-icon>warning</mat-icon>
+                            <span>{{ step.errorMessage }}</span>
+                        </div>
+
+                        <!-- Input/Output Accordion -->
+                        <details class="step-item__data" *ngIf="step.input || step.output">
+                            <summary>View Data</summary>
+                            <div class="data-block">
+                                <div class="data-section" *ngIf="step.input">
+                                    <span class="data-label">Input:</span>
+                                    <pre class="data-json">{{ step.input | json }}</pre>
+                                </div>
+                                <div class="data-section" *ngIf="step.output">
+                                    <span class="data-label">Output:</span>
+                                    <pre class="data-json">{{ step.output | json }}</pre>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Details -->
+        <div class="details-panel__loading" *ngIf="isLoadingDetails">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <span>Loading details...</span>
+        </div>
+    </div>
+
+    <!-- Backdrop for mobile -->
+    <div class="details-backdrop" *ngIf="selectedExecution" (click)="closeDetails()"></div>
+</div>

@@ -38,6 +38,8 @@ import { WorkflowListComponent } from './workflow-list/workflow-list.component';
 import { AddWorkflowDialogComponent } from './add-workflow-dialog/add-workflow-dialog.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { WorkflowBuilderComponent } from './features/workflow-builder/workflow-builder.component';
+import { HistoryComponent } from './features/history/history.component';
+import { AppsComponent } from './features/apps/apps.component';
 
 // Core Components
 import { SidebarComponent } from './core/components/sidebar/sidebar.component';
@@ -55,6 +57,8 @@ import { ThemeService } from './core/services/theme.service';
     AddWorkflowDialogComponent,
     DashboardComponent,
     WorkflowBuilderComponent,
+    HistoryComponent,
+    AppsComponent,
     SidebarComponent,
     NavbarComponent,
   ],

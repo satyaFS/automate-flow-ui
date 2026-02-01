@@ -4,6 +4,8 @@ import { WorkflowComponent } from './workflow/workflow.component';
 import { WorkflowListComponent } from './workflow-list/workflow-list.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { WorkflowBuilderComponent } from './features/workflow-builder/workflow-builder.component';
+import { HistoryComponent } from './features/history/history.component';
+import { AppsComponent } from './features/apps/apps.component';
 
 const routes: Routes = [
   // Dashboard - Home page
@@ -17,10 +19,12 @@ const routes: Routes = [
   // Legacy route (for backwards compatibility)
   { path: 'workflow-old/:id', component: WorkflowComponent },
 
-  // Future routes (placeholders - redirect to workflow list for now)
-  { path: 'apps', redirectTo: '/workflowlist', pathMatch: 'full' },
-  { path: 'history', redirectTo: '/workflowlist', pathMatch: 'full' },
-  { path: 'settings', redirectTo: '/workflowlist', pathMatch: 'full' },
+  // History page
+  { path: 'history', component: HistoryComponent },
+
+  // Apps page - Manage connected integrations
+  { path: 'apps', component: AppsComponent },
+  { path: 'settings', redirectTo: '/dashboard', pathMatch: 'full' },
 
   // Default redirect to dashboard
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },

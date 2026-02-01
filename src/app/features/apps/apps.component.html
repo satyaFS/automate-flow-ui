@@ -1,0 +1,174 @@
+<div class="apps-page">
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading connectors...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-banner" *ngIf="error">
+        <mat-icon>warning</mat-icon>
+        <span>{{ error }}</span>
+        <button class="btn btn--ghost btn--sm" (click)="refreshConnectors()">
+            <mat-icon>refresh</mat-icon>
+            Retry
+        </button>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">Connected Apps</h1>
+            <p class="page-header__subtitle">
+                Manage your app connections and integrations
+            </p>
+        </div>
+        <button class="btn btn--secondary" (click)="refreshConnectors()">
+            <mat-icon>refresh</mat-icon>
+            Refresh
+        </button>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <div class="filters-bar__search">
+            <mat-icon>search</mat-icon>
+            <input type="text" placeholder="Search apps..." [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()" />
+        </div>
+
+        <div class="filters-bar__categories">
+            <button *ngFor="let cat of categories" class="category-btn" [class.active]="selectedCategory === cat.id"
+                (click)="onCategoryChange(cat.id)">
+                <mat-icon>{{ cat.icon }}</mat-icon>
+                {{ cat.name }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Connected Apps Section -->
+    <section class="apps-section" *ngIf="connections.length > 0">
+        <h2 class="section-title">Connected</h2>
+        <div class="apps-grid">
+            <ng-container *ngFor="let connector of filteredConnectors">
+                <div class="app-card app-card--connected" *ngIf="isConnected(connector.id)">
+                    <div class="app-card__header">
+                        <div class="app-card__icon" [style.background-color]="connector.color + '20'">
+                            <mat-icon [style.color]="connector.color">{{ connector.icon }}</mat-icon>
+                        </div>
+                        <div class="app-card__info">
+                            <h3 class="app-card__name">{{ connector.name }}</h3>
+                            <span class="app-card__category">{{ connector.category }}</span>
+                        </div>
+                        <span class="connected-badge">
+                            <mat-icon>check_circle</mat-icon>
+                            Connected
+                        </span>
+                    </div>
+
+                    <div class="app-card__accounts">
+                        <div class="account-item" *ngFor="let account of getConnectedAccounts(connector.id)">
+                            <div class="account-item__info">
+                                <mat-icon>account_circle</mat-icon>
+                                <span>{{ account.accountName }}</span>
+                            </div>
+                            <button class="btn btn--ghost btn--sm" (click)="disconnectApp(connector.id, account.id)">
+                                <mat-icon>link_off</mat-icon>
+                                Disconnect
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn--secondary btn--sm add-account-btn" (click)="connectApp(connector)">
+                        <mat-icon>add</mat-icon>
+                        Add another account
+                    </button>
+                </div>
+            </ng-container>
+        </div>
+    </section>
+
+    <!-- Available Apps Section -->
+    <section class="apps-section">
+        <h2 class="section-title">Available Apps</h2>
+        <div class="apps-grid">
+            <div class="app-card" *ngFor="let connector of filteredConnectors"
+                [class.app-card--connected]="isConnected(connector.id)">
+                <div class="app-card__header">
+                    <div class="app-card__icon" [style.background-color]="connector.color + '20'">
+                        <mat-icon [style.color]="connector.color">{{ connector.icon }}</mat-icon>
+                    </div>
+                    <div class="app-card__info">
+                        <h3 class="app-card__name">{{ connector.name }}</h3>
+                        <span class="app-card__category">{{ connector.category }}</span>
+                    </div>
+                </div>
+
+                <p class="app-card__description">{{ connector.description }}</p>
+
+                <div class="app-card__meta">
+                    <span class="meta-item">
+                        <mat-icon>{{ connector.triggers.length > 0 ? 'bolt' : 'remove' }}</mat-icon>
+                        {{ connector.triggers.length }} Trigger{{ connector.triggers.length !== 1 ? 's' : '' }}
+                    </span>
+                    <span class="meta-item">
+                        <mat-icon>{{ connector.actions.length > 0 ? 'play_arrow' : 'remove' }}</mat-icon>
+                        {{ connector.actions.length }} Action{{ connector.actions.length !== 1 ? 's' : '' }}
+                    </span>
+                </div>
+
+                <div class="app-card__footer">
+                    <span class="auth-type">{{ getAuthTypeText(connector.authType) }}</span>
+                    <button class="btn btn--primary btn--sm" *ngIf="!isConnected(connector.id)"
+                        (click)="connectApp(connector)">
+                        <mat-icon>add</mat-icon>
+                        Connect
+                    </button>
+                    <span class="connected-status" *ngIf="isConnected(connector.id)">
+                        <mat-icon>check_circle</mat-icon>
+                        Connected
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredConnectors.length === 0 && !isLoading">
+        <div class="empty-state__icon">
+            <mat-icon>extension</mat-icon>
+        </div>
+        <h3 class="empty-state__title">No apps found</h3>
+        <p class="empty-state__description">
+            Try adjusting your search or category filter.
+        </p>
+    </div>
+</div>
+
+<!-- API Key Dialog -->
+<div class="dialog-overlay" *ngIf="showApiKeyDialog" (click)="closeApiKeyDialog()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+        <div class="dialog__header">
+            <h2>Connect {{ apiKeyConnector?.name }}</h2>
+            <button class="btn btn--icon" (click)="closeApiKeyDialog()">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+        <div class="dialog__body">
+            <p class="dialog__description">
+                Enter your API key to connect {{ apiKeyConnector?.name }}.
+            </p>
+            <div class="form-field">
+                <label>API Key</label>
+                <input type="password" [(ngModel)]="apiKeyInput" placeholder="Enter your API key" class="form-input" />
+            </div>
+        </div>
+        <div class="dialog__footer">
+            <button class="btn btn--secondary" (click)="closeApiKeyDialog()">Cancel</button>
+            <button class="btn btn--primary" (click)="submitApiKey()" [disabled]="!apiKeyInput.trim()">
+                <mat-icon>check</mat-icon>
+                Connect
+            </button>
+        </div>
+    </div>
+</div>

@@ -4,6 +4,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { WorkflowBuilderService, WorkflowNode, CanvasState } from './services/workflow-builder.service';
 import { AppService } from '../../app.service';
+import { ConnectorRegistryService } from '../../core/services/connector-registry.service';
+import { ConnectorDefinition, TriggerDefinition, ActionDefinition, ConfigField } from '../../core/models/connector.model';
 
 @Component({
     selector: 'app-workflow-builder',
@@ -29,25 +31,34 @@ export class WorkflowBuilderComponent implements OnInit, OnDestroy {
     selectedNode: WorkflowNode | null = null;
     showAppGallery = false;
     addingNodeType: 'trigger' | 'action' | null = null;
+    gallerySearchQuery = '';
 
-    // Available connectors
-    connectors = [
-        { id: 'gmail', name: 'Gmail', icon: 'email', category: 'email', color: '#EA4335' },
-        { id: 'slack', name: 'Slack', icon: 'chat', category: 'messaging', color: '#4A154B' },
-        { id: 'telegram', name: 'Telegram', icon: 'send', category: 'messaging', color: '#0088CC' },
-        { id: 'gemini', name: 'Gemini AI', icon: 'psychology', category: 'ai', color: '#4285F4' },
-        { id: 'webhook', name: 'Webhook', icon: 'webhook', category: 'developer', color: '#6366F1' },
-        { id: 'http', name: 'HTTP Request', icon: 'http', category: 'developer', color: '#F97316' }
-    ];
+    // Connectors from registry
+    connectors: ConnectorDefinition[] = [];
+    filteredConnectors: ConnectorDefinition[] = [];
+
+    // Selected node config
+    selectedConnector: ConnectorDefinition | null = null;
+    selectedTriggerOrAction: TriggerDefinition | ActionDefinition | null = null;
+    nodeConfig: Record<string, any> = {};
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         public builderService: WorkflowBuilderService,
-        private appService: AppService
+        private appService: AppService,
+        private connectorRegistry: ConnectorRegistryService
     ) { }
 
     ngOnInit(): void {
+        // Load connectors from registry
+        this.connectorRegistry.getConnectors$()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(connectors => {
+                this.connectors = connectors;
+                this.filteredConnectors = connectors;
+            });
+
         this.route.params.subscribe(params => {
             const id = params['id'];
             if (id && id !== 'new') {
@@ -64,7 +75,15 @@ export class WorkflowBuilderComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe(state => {
                 this.canvasState = state;
-                this.selectedNode = this.builderService.getSelectedNode();
+                const newSelectedNode = this.builderService.getSelectedNode();
+
+                // Update selected node config when selection changes
+                if (newSelectedNode?.id !== this.selectedNode?.id) {
+                    this.selectedNode = newSelectedNode;
+                    this.loadNodeConfig();
+                } else {
+                    this.selectedNode = newSelectedNode;
+                }
             });
     }
 
@@ -120,25 +139,10 @@ export class WorkflowBuilderComponent implements OnInit, OnDestroy {
         this.builderService.selectNode(null);
     }
 
-    openAppGallery(type: 'trigger' | 'action'): void {
-        this.addingNodeType = type;
-        this.showAppGallery = true;
-    }
-
     closeAppGallery(): void {
         this.showAppGallery = false;
         this.addingNodeType = null;
-    }
-
-    selectConnector(connector: any): void {
-        if (this.addingNodeType) {
-            this.builderService.addNode(
-                this.addingNodeType,
-                connector.id,
-                connector.name
-            );
-            this.closeAppGallery();
-        }
+        this.gallerySearchQuery = '';
     }
 
     deleteNode(nodeId: string): void {
@@ -228,5 +232,164 @@ export class WorkflowBuilderComponent implements OnInit, OnDestroy {
         const midY = (startY + endY) / 2;
 
         return `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
+    }
+
+    // ========== Connector Registry Integration ==========
+
+    /**
+     * Load configuration for selected node
+     */
+    loadNodeConfig(): void {
+        if (!this.selectedNode) {
+            this.selectedConnector = null;
+            this.selectedTriggerOrAction = null;
+            this.nodeConfig = {};
+            return;
+        }
+
+        const connectorId = this.selectedNode.data.connectorId;
+        this.selectedConnector = this.connectorRegistry.getConnector(connectorId) || null;
+
+        if (this.selectedConnector) {
+            if (this.selectedNode.type === 'trigger') {
+                // Get first trigger or specific one from node config
+                const triggerId = this.selectedNode.data.triggerId || this.selectedConnector.triggers[0]?.id;
+                this.selectedTriggerOrAction = this.connectorRegistry.getTrigger(connectorId, triggerId) || null;
+            } else {
+                // Get first action or specific one from node config
+                const actionId = this.selectedNode.data.actionId || this.selectedConnector.actions[0]?.id;
+                this.selectedTriggerOrAction = this.connectorRegistry.getAction(connectorId, actionId) || null;
+            }
+        }
+
+        // Load existing config from node
+        this.nodeConfig = { ...this.selectedNode.data.config } || {};
+    }
+
+    /**
+     * Get config fields for currently selected trigger/action
+     */
+    getConfigFields(): ConfigField[] {
+        return this.selectedTriggerOrAction?.configFields || [];
+    }
+
+    /**
+     * Get available triggers for selected connector
+     */
+    getAvailableTriggers(): TriggerDefinition[] {
+        return this.selectedConnector?.triggers || [];
+    }
+
+    /**
+     * Get available actions for selected connector
+     */
+    getAvailableActions(): ActionDefinition[] {
+        return this.selectedConnector?.actions || [];
+    }
+
+    /**
+     * Handle trigger/action selection change
+     */
+    onTriggerOrActionChange(id: string): void {
+        if (!this.selectedConnector || !this.selectedNode) return;
+
+        if (this.selectedNode.type === 'trigger') {
+            this.selectedTriggerOrAction = this.connectorRegistry.getTrigger(this.selectedConnector.id, id) || null;
+            this.builderService.updateNodeConfig(this.selectedNode.id, {
+                ...this.selectedNode.data,
+                triggerId: id
+            });
+        } else {
+            this.selectedTriggerOrAction = this.connectorRegistry.getAction(this.selectedConnector.id, id) || null;
+            this.builderService.updateNodeConfig(this.selectedNode.id, {
+                ...this.selectedNode.data,
+                actionId: id
+            });
+        }
+
+        // Reset config when changing trigger/action
+        this.nodeConfig = {};
+    }
+
+    /**
+     * Update a config field value
+     */
+    onConfigFieldChange(key: string, value: any): void {
+        this.nodeConfig[key] = value;
+
+        if (this.selectedNode) {
+            this.builderService.updateNodeConfig(this.selectedNode.id, {
+                ...this.selectedNode.data,
+                config: this.nodeConfig
+            });
+        }
+    }
+
+    /**
+     * Filter connectors in gallery based on search and type
+     */
+    filterGalleryConnectors(): void {
+        let filtered = this.connectors;
+
+        // Filter by type (triggers only show connectors with triggers, etc.)
+        if (this.addingNodeType === 'trigger') {
+            filtered = this.connectorRegistry.getConnectorsWithTriggers();
+        } else if (this.addingNodeType === 'action') {
+            filtered = this.connectorRegistry.getConnectorsWithActions();
+        }
+
+        // Apply search filter
+        if (this.gallerySearchQuery.trim()) {
+            const query = this.gallerySearchQuery.toLowerCase();
+            filtered = filtered.filter(c =>
+                c.name.toLowerCase().includes(query) ||
+                c.description.toLowerCase().includes(query) ||
+                c.category.toLowerCase().includes(query)
+            );
+        }
+
+        this.filteredConnectors = filtered;
+    }
+
+    /**
+     * Handle gallery search input
+     */
+    onGallerySearchChange(): void {
+        this.filterGalleryConnectors();
+    }
+
+    /**
+     * Open app gallery with proper filtering
+     */
+    openAppGallery(type: 'trigger' | 'action'): void {
+        this.addingNodeType = type;
+        this.gallerySearchQuery = '';
+        this.filterGalleryConnectors();
+        this.showAppGallery = true;
+    }
+
+    /**
+     * Select connector and add node to canvas
+     */
+    selectConnector(connector: ConnectorDefinition): void {
+        if (!this.addingNodeType) return;
+
+        // Determine icon from connector
+        const icon = connector.icon;
+
+        // Add node with connector metadata
+        this.builderService.addNode(
+            this.addingNodeType,
+            connector.id,
+            connector.name,
+            {
+                icon,
+                color: connector.color,
+                triggerId: connector.triggers[0]?.id,
+                actionId: connector.actions[0]?.id
+            }
+        );
+
+        this.closeAppGallery();
     }
 }

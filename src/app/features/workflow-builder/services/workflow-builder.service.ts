@@ -113,18 +113,25 @@ export class WorkflowBuilderService {
         });
     }
 
-    addNode(type: 'trigger' | 'action' | 'condition', connectorId: string, connectorName: string, position?: Position): WorkflowNode {
+    addNode(
+        type: 'trigger' | 'action' | 'condition',
+        connectorId: string,
+        connectorName: string,
+        extraData?: { icon?: string; color?: string; triggerId?: string; actionId?: string }
+    ): WorkflowNode {
         const state = this.currentState;
         const id = `${type}-${++this.nodeIdCounter}`;
 
         const newNode: WorkflowNode = {
             id,
             type,
-            position: position || this.getNextNodePosition(type),
+            position: this.getNextNodePosition(type),
             data: {
                 connectorId,
                 connectorName,
-                icon: this.getConnectorIcon(connectorId),
+                icon: extraData?.icon || this.getConnectorIcon(connectorId),
+                triggerId: extraData?.triggerId,
+                actionId: extraData?.actionId,
                 config: {}
             }
         };
