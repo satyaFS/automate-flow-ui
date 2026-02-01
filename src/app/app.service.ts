@@ -10,20 +10,28 @@ export class AppService {
   triggerBaseUrl = "http://localhost:8083/triggers"
   actionBaseUrl = "http://localhost:8084/actions"
 
-  constructor(private http:HttpClient) { }
-  public addWorkflow(workflow:any):Observable<any>{
-    return this.http.post(this.workflowBaseUrl,workflow);
+  constructor(private http: HttpClient) { }
+  public addWorkflow(workflow: any): Observable<any> {
+    return this.http.post(this.workflowBaseUrl, workflow);
   }
 
-  public getWorkFlowsByUserId(userId:any) {
-    return this.http.get<any>(this.workflowBaseUrl+"/user/" + userId);
+  public getWorkFlowsByUserId(userId: any) {
+    return this.http.get<any>(this.workflowBaseUrl + "/user/" + userId);
+  }
+
+  public getWorkFlowById(workflowId: string) {
+    return this.http.get<any>(this.workflowBaseUrl + "/" + workflowId);
+  }
+
+  public updateWorkflow(workflowId: string, workflow: any): Observable<any> {
+    return this.http.put(this.workflowBaseUrl + "/" + workflowId, workflow);
   }
 
   //trigger 
-  public getTriggerByWorkflowId(triggerId:string) {
-    return this.http.get<any>(this.triggerBaseUrl+"/workflow/"+triggerId);
+  public getTriggerByWorkflowId(triggerId: string) {
+    return this.http.get<any>(this.triggerBaseUrl + "/workflow/" + triggerId);
   }
-  public saveAction(action:any) {
+  public saveAction(action: any) {
     return this.http.post<any>(this.actionBaseUrl, action);
   }
 }

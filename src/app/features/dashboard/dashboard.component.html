@@ -1,0 +1,164 @@
+<div class="dashboard">
+    <!-- Welcome Header -->
+    <div class="dashboard__header">
+        <div class="dashboard__welcome">
+            <h1 class="dashboard__title">Welcome back! 👋</h1>
+            <p class="dashboard__subtitle">Here's what's happening with your automations</p>
+        </div>
+        <div class="dashboard__actions">
+            <button class="btn btn--primary" (click)="createWorkflow()">
+                <mat-icon>add</mat-icon>
+                New Workflow
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card" *ngFor="let stat of stats; let i = index" [class]="'stat-card--' + stat.color"
+            [class.stat-card--loading]="isLoading">
+            <div class="stat-card__icon">
+                <mat-icon>{{ stat.icon }}</mat-icon>
+            </div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">
+                    <ng-container *ngIf="!isLoading">{{ stat.value }}</ng-container>
+                    <span class="skeleton-text" *ngIf="isLoading"></span>
+                </span>
+                <span class="stat-card__title">{{ stat.title }}</span>
+                <span class="stat-card__subtitle">{{ stat.subtitle }}</span>
+            </div>
+            <div class="stat-card__trend" *ngIf="stat.trend && !isLoading">
+                <mat-icon [class]="'trend--' + stat.trend.direction">
+                    {{ stat.trend.direction === 'up' ? 'trending_up' : 'trending_down' }}
+                </mat-icon>
+                <span>{{ stat.trend.value }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="dashboard__content">
+        <!-- Recent Activity -->
+        <div class="dashboard__section activity-section">
+            <div class="section-header">
+                <h2 class="section-title">Recent Activity</h2>
+                <button class="btn btn--ghost" (click)="navigateToHistory()">
+                    View All
+                    <mat-icon>arrow_forward</mat-icon>
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div class="activity-list" *ngIf="isLoading">
+                <div class="activity-item activity-item--skeleton" *ngFor="let i of [1,2,3,4,5]">
+                    <div class="skeleton-circle" style="width: 40px; height: 40px;"></div>
+                    <div class="activity-item__content">
+                        <div class="skeleton-text" style="width: 60%;"></div>
+                        <div class="skeleton-text" style="width: 40%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity List -->
+            <div class="activity-list" *ngIf="!isLoading">
+                <div class="activity-item" *ngFor="let execution of recentExecutions"
+                    [class]="'activity-item--' + execution.status" (click)="viewExecution(execution)">
+                    <div class="activity-item__icon">
+                        <mat-icon>{{ getStatusIcon(execution.status) }}</mat-icon>
+                    </div>
+                    <div class="activity-item__content">
+                        <span class="activity-item__name">{{ execution.workflowName }}</span>
+                        <span class="activity-item__meta">
+                            <span class="activity-item__status">{{ execution.status | titlecase }}</span>
+                            <span class="activity-item__separator">•</span>
+                            <span class="activity-item__time">{{ getTimeAgo(execution.timestamp) }}</span>
+                            <span class="activity-item__separator" *ngIf="execution.duration">•</span>
+                            <span class="activity-item__duration" *ngIf="execution.duration">{{ execution.duration
+                                }}</span>
+                        </span>
+                    </div>
+                    <div class="activity-item__actions">
+                        <button class="btn btn--ghost btn--sm" *ngIf="execution.status === 'error'"
+                            (click)="retryExecution(execution); $event.stopPropagation()">
+                            <mat-icon>refresh</mat-icon>
+                            Retry
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state empty-state--compact" *ngIf="recentExecutions.length === 0">
+                    <mat-icon class="empty-state__icon">history</mat-icon>
+                    <p class="empty-state__title">No recent activity</p>
+                    <p class="empty-state__description">Your workflow executions will appear here</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connected Apps -->
+        <div class="dashboard__section apps-section">
+            <div class="section-header">
+                <h2 class="section-title">Connected Apps</h2>
+                <button class="btn btn--ghost" (click)="navigateToApps()">
+                    Manage
+                    <mat-icon>arrow_forward</mat-icon>
+                </button>
+            </div>
+
+            <div class="apps-grid">
+                <div class="app-card" *ngFor="let app of connectedApps" [class.app-card--connected]="app.connected"
+                    (click)="connectApp(app)">
+                    <div class="app-card__icon">
+                        <mat-icon>{{ app.icon }}</mat-icon>
+                    </div>
+                    <span class="app-card__name">{{ app.name }}</span>
+                    <span class="app-card__status">
+                        <ng-container *ngIf="app.connected">
+                            <span class="status-dot status-dot--active"></span>
+                            Connected
+                        </ng-container>
+                        <ng-container *ngIf="!app.connected">
+                            <mat-icon class="connect-icon">add_circle_outline</mat-icon>
+                            Connect
+                        </ng-container>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard__section quick-actions-section">
+            <div class="section-header">
+                <h2 class="section-title">Quick Actions</h2>
+            </div>
+
+            <div class="quick-actions">
+                <button class="quick-action" (click)="createWorkflow()">
+                    <div class="quick-action__icon">
+                        <mat-icon>add</mat-icon>
+                    </div>
+                    <span class="quick-action__label">Create Workflow</span>
+                </button>
+                <button class="quick-action" (click)="navigateToWorkflows()">
+                    <div class="quick-action__icon">
+                        <mat-icon>bolt</mat-icon>
+                    </div>
+                    <span class="quick-action__label">View Workflows</span>
+                </button>
+                <button class="quick-action" (click)="navigateToApps()">
+                    <div class="quick-action__icon">
+                        <mat-icon>apps</mat-icon>
+                    </div>
+                    <span class="quick-action__label">Connect App</span>
+                </button>
+                <button class="quick-action" (click)="navigateToHistory()">
+                    <div class="quick-action__icon">
+                        <mat-icon>history</mat-icon>
+                    </div>
+                    <span class="quick-action__label">View History</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

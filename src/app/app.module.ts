@@ -30,11 +30,14 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 // Third-party Modules
 import { NgxGraphModule } from '@swimlane/ngx-graph';
 import { HttpClientModule } from '@angular/common/http';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 // Feature Components
 import { PlaygroundComponent } from './playground/playground.component';
 import { WorkflowListComponent } from './workflow-list/workflow-list.component';
 import { AddWorkflowDialogComponent } from './add-workflow-dialog/add-workflow-dialog.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { WorkflowBuilderComponent } from './features/workflow-builder/workflow-builder.component';
 
 // Core Components
 import { SidebarComponent } from './core/components/sidebar/sidebar.component';
@@ -50,6 +53,8 @@ import { ThemeService } from './core/services/theme.service';
     PlaygroundComponent,
     WorkflowListComponent,
     AddWorkflowDialogComponent,
+    DashboardComponent,
+    WorkflowBuilderComponent,
     SidebarComponent,
     NavbarComponent,
   ],
@@ -83,6 +88,7 @@ import { ThemeService } from './core/services/theme.service';
 
     // Third-party
     NgxGraphModule,
+    DragDropModule,
   ],
   providers: [
     ThemeService,

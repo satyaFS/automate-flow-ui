@@ -1,0 +1,681 @@
+@use '../../../styles/variables' as *;
+
+.workflow-builder {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - #{$navbar-height});
+    margin: -$spacing-6;
+    margin-top: -$spacing-6;
+
+    @include lg {
+        margin: -$spacing-8;
+        margin-top: -$spacing-8;
+    }
+}
+
+// Header
+.builder-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 $spacing-4;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-default);
+    flex-shrink: 0;
+
+    &__left {
+        display: flex;
+        align-items: center;
+        gap: $spacing-2;
+    }
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: $spacing-3;
+    }
+
+    &__actions {
+        display: flex;
+        gap: $spacing-2;
+    }
+}
+
+.workflow-name-input {
+    font-size: $text-lg;
+    font-weight: $font-semibold;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    padding: $spacing-1 $spacing-2;
+    border-radius: $radius-md;
+    outline: none;
+    min-width: 200px;
+    transition: background-color $transition-fast;
+
+    &:hover,
+    &:focus {
+        background-color: var(--bg-hover);
+    }
+}
+
+.workflow-status {
+    display: flex;
+    align-items: center;
+    gap: $spacing-1;
+    font-size: $text-xs;
+    color: var(--text-tertiary);
+    padding: $spacing-1 $spacing-2;
+    background-color: var(--bg-tertiary);
+    border-radius: $radius-full;
+
+    .status-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    &--new {
+        color: var(--color-primary);
+        background-color: var(--bg-active);
+
+        mat-icon {
+            font-size: 12px;
+            width: 12px;
+            height: 12px;
+        }
+    }
+}
+
+// Content
+.builder-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+// Canvas Container
+.canvas-container {
+    flex: 1;
+    position: relative;
+    background-color: var(--bg-app);
+    background-image:
+        radial-gradient(circle, var(--border-default) 1px, transparent 1px);
+    background-size: 20px 20px;
+    overflow: hidden;
+}
+
+// Canvas
+.canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0;
+    transition: transform 0.1s ease-out;
+}
+
+// Connections SVG
+.connections-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.connection-line {
+    fill: none;
+    stroke: var(--border-default);
+    stroke-width: 2;
+    stroke-dasharray: 5, 5;
+    animation: flowDash 1s linear infinite;
+}
+
+@keyframes flowDash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+// Workflow Node
+.workflow-node {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: $spacing-3;
+    padding: $spacing-3 $spacing-4;
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-default);
+    border-radius: $radius-xl;
+    cursor: grab;
+    min-width: 180px;
+    transition: all $transition-fast;
+    user-select: none;
+
+    &:hover {
+        border-color: var(--border-hover);
+        box-shadow: var(--shadow-md);
+    }
+
+    &:active {
+        cursor: grabbing;
+    }
+
+    &--selected {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba($primary-500, 0.2);
+    }
+
+    &--trigger {
+        .workflow-node__icon {
+            background: linear-gradient(135deg, $success-500, $success-600);
+        }
+    }
+
+    &--action {
+        .workflow-node__icon {
+            background: linear-gradient(135deg, $primary-500, $primary-600);
+        }
+    }
+
+    &--condition {
+        .workflow-node__icon {
+            background: linear-gradient(135deg, $warning-500, $warning-600);
+        }
+    }
+
+    &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: $radius-lg;
+        flex-shrink: 0;
+
+        mat-icon {
+            color: white;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    &__type {
+        font-size: $text-xs;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    &__name {
+        font-size: $text-sm;
+        font-weight: $font-medium;
+        color: var(--text-primary);
+    }
+
+    &__delete {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background-color: $error-500;
+        border-radius: $radius-full;
+        color: white;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all $transition-fast;
+
+        mat-icon {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    &--selected .workflow-node__delete {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+// Zoom Controls
+.zoom-controls {
+    position: absolute;
+    bottom: $spacing-4;
+    left: $spacing-4;
+    display: flex;
+    align-items: center;
+    gap: $spacing-1;
+    padding: $spacing-1;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: $radius-lg;
+    z-index: 10;
+}
+
+.zoom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-md;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all $transition-fast;
+
+    &:hover {
+        background-color: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+}
+
+.zoom-level {
+    min-width: 50px;
+    text-align: center;
+    font-size: $text-xs;
+    font-weight: $font-medium;
+    color: var(--text-secondary);
+}
+
+// Add Node Buttons
+.add-node-buttons {
+    position: absolute;
+    bottom: $spacing-4;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: $spacing-2;
+    z-index: 10;
+}
+
+.add-node-btn {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2;
+    padding: $spacing-2 $spacing-4;
+    background-color: var(--bg-secondary);
+    border: 1px dashed var(--border-default);
+    border-radius: $radius-lg;
+    font-size: $text-sm;
+    font-weight: $font-medium;
+    color: var(--text-secondary);
+    transition: all $transition-fast;
+
+    &:hover {
+        border-style: solid;
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        background-color: var(--bg-active);
+    }
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+}
+
+// Canvas Empty State
+.canvas-empty {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: $spacing-8;
+
+    &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, $primary-100, $primary-200);
+        border-radius: $radius-2xl;
+        margin-bottom: $spacing-6;
+
+        mat-icon {
+            font-size: 40px;
+            width: 40px;
+            height: 40px;
+            color: $primary-500;
+        }
+    }
+
+    &__title {
+        font-size: $text-xl;
+        font-weight: $font-semibold;
+        color: var(--text-primary);
+        margin: 0 0 $spacing-2;
+    }
+
+    &__description {
+        font-size: $text-base;
+        color: var(--text-secondary);
+        margin: 0 0 $spacing-6;
+    }
+}
+
+// Config Panel
+.config-panel {
+    width: 0;
+    background-color: var(--bg-secondary);
+    border-left: 1px solid var(--border-default);
+    overflow: hidden;
+    transition: width $transition-slow $ease-out-cubic;
+
+    &--open {
+        width: 360px;
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: $spacing-4;
+        border-bottom: 1px solid var(--border-default);
+    }
+
+    &__title-row {
+        display: flex;
+        align-items: center;
+        gap: $spacing-3;
+    }
+
+    &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: $radius-lg;
+
+        &--trigger {
+            background: linear-gradient(135deg, $success-500, $success-600);
+        }
+
+        &--action {
+            background: linear-gradient(135deg, $primary-500, $primary-600);
+        }
+
+        mat-icon {
+            color: white;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    &__title {
+        font-size: $text-base;
+        font-weight: $font-semibold;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    &__subtitle {
+        font-size: $text-xs;
+        color: var(--text-tertiary);
+    }
+
+    &__content {
+        padding: $spacing-4;
+        overflow-y: auto;
+        height: calc(100% - 73px);
+    }
+
+    &__empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--text-tertiary);
+        text-align: center;
+        padding: $spacing-8;
+
+        mat-icon {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            margin-bottom: $spacing-4;
+            opacity: 0.5;
+        }
+
+        p {
+            font-size: $text-sm;
+            margin: 0;
+        }
+    }
+}
+
+// Config Section
+.config-section {
+    margin-bottom: $spacing-6;
+
+    &__title {
+        font-size: $text-xs;
+        font-weight: $font-semibold;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 $spacing-3;
+    }
+}
+
+.config-field {
+    margin-bottom: $spacing-4;
+
+    &__label {
+        display: block;
+        font-size: $text-sm;
+        font-weight: $font-medium;
+        color: var(--text-primary);
+        margin-bottom: $spacing-2;
+    }
+
+    &__select,
+    &__input {
+        width: 100%;
+        padding: $spacing-3;
+        font-size: $text-sm;
+        color: var(--text-primary);
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-default);
+        border-radius: $radius-lg;
+        outline: none;
+        transition: all $transition-fast;
+
+        &:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba($primary-500, 0.1);
+        }
+    }
+}
+
+// Modal
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--overlay-backdrop);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: $z-modal-backdrop;
+    animation: fadeIn 150ms ease-out;
+}
+
+.app-gallery-modal {
+    width: 560px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background-color: var(--bg-secondary);
+    border-radius: $radius-2xl;
+    overflow: hidden;
+    animation: scaleIn 200ms $ease-out-cubic;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-4 $spacing-6;
+    border-bottom: 1px solid var(--border-default);
+
+    h2 {
+        font-size: $text-xl;
+        font-weight: $font-semibold;
+        color: var(--text-primary);
+        margin: 0;
+    }
+}
+
+.modal-search {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2;
+    margin: $spacing-4 $spacing-6;
+    padding: $spacing-3;
+    background-color: var(--bg-tertiary);
+    border-radius: $radius-lg;
+
+    mat-icon {
+        color: var(--text-tertiary);
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: $text-sm;
+        color: var(--text-primary);
+        outline: none;
+
+        &::placeholder {
+            color: var(--text-tertiary);
+        }
+    }
+}
+
+.app-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-3;
+    padding: 0 $spacing-6 $spacing-6;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.app-gallery-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-2;
+    padding: $spacing-4;
+    background-color: var(--bg-tertiary);
+    border: 1px solid transparent;
+    border-radius: $radius-xl;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        background-color: var(--bg-hover);
+        border-color: var(--border-default);
+        transform: translateY(-2px);
+    }
+
+    &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: $radius-lg;
+
+        mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+    }
+
+    &__name {
+        font-size: $text-sm;
+        font-weight: $font-medium;
+        color: var(--text-primary);
+        text-align: center;
+    }
+}
+
+// Animations
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+// Button utilities
+.btn--full {
+    width: 100%;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

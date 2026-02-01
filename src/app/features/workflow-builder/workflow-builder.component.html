@@ -1,0 +1,202 @@
+<div class="workflow-builder">
+    <!-- Header -->
+    <header class="builder-header">
+        <div class="builder-header__left">
+            <button class="btn btn--ghost btn--icon" (click)="goBack()" aria-label="Go back">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <div class="builder-header__title">
+                <input type="text" class="workflow-name-input" [(ngModel)]="workflowName"
+                    placeholder="Untitled Workflow" />
+                <span class="workflow-status" *ngIf="!isNewWorkflow">
+                    <span class="status-dot status-dot--active"></span>
+                    Saved
+                </span>
+                <span class="workflow-status workflow-status--new" *ngIf="isNewWorkflow">
+                    <mat-icon>edit</mat-icon>
+                    New
+                </span>
+            </div>
+        </div>
+
+        <div class="builder-header__actions">
+            <button class="btn btn--secondary" (click)="testWorkflow()">
+                <mat-icon>play_arrow</mat-icon>
+                Test
+            </button>
+            <button class="btn btn--primary" (click)="saveWorkflow()" [disabled]="isSaving">
+                <mat-icon *ngIf="!isSaving">save</mat-icon>
+                <mat-icon *ngIf="isSaving" class="animate-spin">sync</mat-icon>
+                {{ isSaving ? 'Saving...' : 'Save' }}
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="builder-content">
+        <!-- Canvas Area -->
+        <div class="canvas-container" (click)="onCanvasClick()">
+            <!-- Zoom Controls -->
+            <div class="zoom-controls">
+                <button class="zoom-btn" (click)="onZoomChange(-0.1)" aria-label="Zoom out">
+                    <mat-icon>remove</mat-icon>
+                </button>
+                <span class="zoom-level">{{ (canvasState.zoom * 100) | number:'1.0-0' }}%</span>
+                <button class="zoom-btn" (click)="onZoomChange(0.1)" aria-label="Zoom in">
+                    <mat-icon>add</mat-icon>
+                </button>
+                <button class="zoom-btn" (click)="fitToScreen()" aria-label="Fit to screen">
+                    <mat-icon>fit_screen</mat-icon>
+                </button>
+            </div>
+
+            <!-- Canvas -->
+            <div class="canvas" [style.transform]="getCanvasTransform()">
+                <!-- Connection Lines SVG -->
+                <svg class="connections-layer">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="var(--border-default)" />
+                        </marker>
+                    </defs>
+                    <g *ngFor="let connection of canvasState.connections">
+                        <path class="connection-line" [attr.d]="getConnectionPath(connection)"
+                            marker-end="url(#arrowhead)" />
+                    </g>
+                </svg>
+
+                <!-- Nodes -->
+                <div *ngFor="let node of canvasState.nodes" class="workflow-node"
+                    [class]="'workflow-node--' + node.type" [class.workflow-node--selected]="node.selected"
+                    [style.left.px]="node.position.x" [style.top.px]="node.position.y"
+                    (click)="onNodeSelect(node.id); $event.stopPropagation()" cdkDrag
+                    (cdkDragEnded)="onNodeDrag({ nodeId: node.id, position: { x: node.position.x + $event.distance.x, y: node.position.y + $event.distance.y } })">
+                    <div class="workflow-node__icon">
+                        <mat-icon>{{ node.data.icon }}</mat-icon>
+                    </div>
+                    <div class="workflow-node__content">
+                        <span class="workflow-node__type">{{ node.type | titlecase }}</span>
+                        <span class="workflow-node__name">{{ node.data.connectorName }}</span>
+                    </div>
+                    <button class="workflow-node__delete" (click)="deleteNode(node.id); $event.stopPropagation()"
+                        *ngIf="node.selected">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
+
+                <!-- Empty State / Add Buttons -->
+                <div class="canvas-empty" *ngIf="canvasState.nodes.length === 0">
+                    <div class="canvas-empty__icon">
+                        <mat-icon>bolt</mat-icon>
+                    </div>
+                    <h3 class="canvas-empty__title">Start building your workflow</h3>
+                    <p class="canvas-empty__description">Add a trigger to begin automation</p>
+                    <button class="btn btn--primary" (click)="openAppGallery('trigger')">
+                        <mat-icon>add</mat-icon>
+                        Add Trigger
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Node Buttons (when canvas has nodes) -->
+            <div class="add-node-buttons" *ngIf="canvasState.nodes.length > 0">
+                <button class="add-node-btn" *ngIf="!hasTrigger()" (click)="openAppGallery('trigger')">
+                    <mat-icon>add</mat-icon>
+                    Add Trigger
+                </button>
+                <button class="add-node-btn" (click)="openAppGallery('action')">
+                    <mat-icon>add</mat-icon>
+                    Add Action
+                </button>
+            </div>
+        </div>
+
+        <!-- Config Panel -->
+        <aside class="config-panel" [class.config-panel--open]="selectedNode">
+            <div class="config-panel__header" *ngIf="selectedNode">
+                <div class="config-panel__title-row">
+                    <div class="config-panel__icon" [class]="'config-panel__icon--' + selectedNode.type">
+                        <mat-icon>{{ selectedNode.data.icon }}</mat-icon>
+                    </div>
+                    <div>
+                        <h3 class="config-panel__title">{{ selectedNode.data.connectorName }}</h3>
+                        <span class="config-panel__subtitle">{{ selectedNode.type | titlecase }}</span>
+                    </div>
+                </div>
+                <button class="btn btn--ghost btn--icon" (click)="builderService.selectNode(null)">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+
+            <div class="config-panel__content" *ngIf="selectedNode">
+                <div class="config-section">
+                    <h4 class="config-section__title">Configuration</h4>
+
+                    <!-- Dynamic config fields based on connector -->
+                    <div class="config-field">
+                        <label class="config-field__label">Account</label>
+                        <select class="config-field__select">
+                            <option>Select account...</option>
+                            <option>Connected Account 1</option>
+                        </select>
+                    </div>
+
+                    <div class="config-field" *ngIf="selectedNode.type === 'trigger'">
+                        <label class="config-field__label">Event</label>
+                        <select class="config-field__select">
+                            <option>New Email Received</option>
+                            <option>Email Updated</option>
+                        </select>
+                    </div>
+
+                    <div class="config-field" *ngIf="selectedNode.type === 'action'">
+                        <label class="config-field__label">Action</label>
+                        <select class="config-field__select">
+                            <option>Send Message</option>
+                            <option>Create Record</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h4 class="config-section__title">Test</h4>
+                    <button class="btn btn--secondary btn--full">
+                        <mat-icon>play_arrow</mat-icon>
+                        Test this step
+                    </button>
+                </div>
+            </div>
+
+            <div class="config-panel__empty" *ngIf="!selectedNode">
+                <mat-icon>touch_app</mat-icon>
+                <p>Select a node to configure</p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- App Gallery Modal -->
+    <div class="modal-backdrop" *ngIf="showAppGallery" (click)="closeAppGallery()">
+        <div class="app-gallery-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Choose an App</h2>
+                <button class="btn btn--ghost btn--icon" (click)="closeAppGallery()">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+
+            <div class="modal-search">
+                <mat-icon>search</mat-icon>
+                <input type="text" placeholder="Search apps..." />
+            </div>
+
+            <div class="app-gallery-grid">
+                <div class="app-gallery-item" *ngFor="let connector of connectors" (click)="selectConnector(connector)">
+                    <div class="app-gallery-item__icon" [style.background-color]="connector.color + '20'">
+                        <mat-icon [style.color]="connector.color">{{ connector.icon }}</mat-icon>
+                    </div>
+                    <span class="app-gallery-item__name">{{ connector.name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
