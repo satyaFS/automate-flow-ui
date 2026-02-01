@@ -1,0 +1,175 @@
+@use '../../../../styles/variables' as *;
+
+.navbar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: $navbar-height;
+    padding: 0 $spacing-6;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-default);
+    z-index: $z-sticky;
+    gap: $spacing-4;
+
+    @include lg {
+        padding: 0 $spacing-8;
+    }
+
+    // Search Bar
+    &__search {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        max-width: 480px;
+        height: 40px;
+        padding: 0 $spacing-4;
+        background-color: var(--bg-tertiary);
+        border: 1px solid transparent;
+        border-radius: $radius-lg;
+        transition: all $transition-fast;
+
+        &:focus-within {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba($primary-500, 0.1);
+        }
+    }
+
+    &__search-icon {
+        color: var(--text-tertiary);
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        margin-right: $spacing-2;
+    }
+
+    &__search-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: $text-sm;
+        color: var(--text-primary);
+        outline: none;
+
+        &::placeholder {
+            color: var(--text-tertiary);
+        }
+    }
+
+    &__search-shortcut {
+        display: none;
+        padding: $spacing-1 $spacing-2;
+        font-size: $text-xs;
+        font-family: $font-sans;
+        color: var(--text-tertiary);
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: $radius-sm;
+
+        @include md {
+            display: block;
+        }
+    }
+
+    // Actions
+    &__actions {
+        display: flex;
+        align-items: center;
+        gap: $spacing-2;
+
+        @include md {
+            gap: $spacing-3;
+        }
+    }
+
+    &__action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: $radius-lg;
+        background: transparent;
+        color: var(--text-secondary);
+        transition: all $transition-fast;
+
+        &:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        mat-icon {
+            font-size: 22px;
+            width: 22px;
+            height: 22px;
+        }
+    }
+
+    // Notifications
+    &__notifications {
+        position: relative;
+    }
+
+    &__notification-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 $spacing-1;
+        font-size: 10px;
+        font-weight: $font-bold;
+        color: white;
+        background-color: $error-500;
+        border-radius: $radius-full;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    // User Button
+    &__user-btn {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        background: transparent;
+        border-radius: $radius-full;
+        transition: all $transition-fast;
+
+        &:hover {
+            .navbar__user-avatar {
+                border-color: var(--color-primary);
+            }
+        }
+    }
+
+    &__user-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background-color: var(--bg-tertiary);
+        border: 2px solid transparent;
+        border-radius: $radius-full;
+        transition: border-color $transition-fast;
+
+        mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+        }
+    }
+}
+
+// Hide text on mobile for new workflow button
+.hide-mobile {
+    display: none;
+
+    @include md {
+        display: inline;
+    }
+}

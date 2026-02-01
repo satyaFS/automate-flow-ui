@@ -17,7 +17,7 @@ export class WorkflowComponent {
   actionTypes = ['REST API'];
   workflowId = ''
 
-  constructor(private fb:FormBuilder, private activatedRout:ActivatedRoute, private appService:AppService){
+  constructor(private fb: FormBuilder, private activatedRout: ActivatedRoute, private appService: AppService) {
     this.form = this.fb.group({
       trigger: this.fb.group({ // Separate FormGroup for the trigger
         triggerType: ['Webhook', Validators.required],
@@ -27,13 +27,13 @@ export class WorkflowComponent {
     });
   }
   ngOnInit() {
-   
-    this.activatedRout.paramMap.subscribe(it=>{
-       this.workflowId= it.get("id") || ''
-       console.log(this.workflowId)
-       if(this.workflowId != '') {
+
+    this.activatedRout.paramMap.subscribe(it => {
+      this.workflowId = it.get("id") || ''
+      console.log(this.workflowId)
+      if (this.workflowId != '') {
         this.initTriggerData();
-       }
+      }
 
     })
     this.addAction()
@@ -46,13 +46,15 @@ export class WorkflowComponent {
   get actions() {
     return this.form.get('actions') as FormArray;
   }
-  addAction(index?:number) {
+  addAction(index?: number) {
     const actionGroup = this.fb.group({
       actionType: ['REST API', Validators.required],
       url: ['', [Validators.required, Validators.pattern(/http:\/\/|https:\/\//)]],
-      passPrevData:[''],
+      passPrevData: [''],
       requestType: ['', Validators.required],
-      payLoad:['', Validators.required]
+
+      payLoad: ['', Validators.required],
+      mappings: this.fb.array([])
     });
     if (index !== undefined) {
       this.actions.insert(index, actionGroup);
@@ -60,12 +62,28 @@ export class WorkflowComponent {
       this.actions.push(actionGroup);
     }
   }
+
+  getMappings(actionIndex: number): FormArray {
+    return this.actions.at(actionIndex).get('mappings') as FormArray;
+  }
+
+  addMapping(actionIndex: number) {
+    const mappingGroup = this.fb.group({
+      target: ['', Validators.required],
+      path: ['', Validators.required]
+    });
+    this.getMappings(actionIndex).push(mappingGroup);
+  }
+
+  removeMapping(actionIndex: number, mappingIndex: number) {
+    this.getMappings(actionIndex).removeAt(mappingIndex);
+  }
   removeAction(index: number) {
     console.log(index)
-    if(index==0) return
+    if (index == 0) return
     this.actions.removeAt(index);
   }
-  
+
   onSubmit() {
     if (this.form.valid) {
       // Process form data
@@ -73,10 +91,28 @@ export class WorkflowComponent {
   }
 
   initTriggerData() {
-    this.appService.getTriggerByWorkflowId(this.workflowId).subscribe(data=>{
+    this.appService.getTriggerByWorkflowId(this.workflowId).subscribe(data => {
       console.log(data)
       this.trigger.get('url')?.setValue(data.url);
     })
   }
 
+  saveAction(action: any) {
+    const actionData = action.value;
+
+    // Transform mappings array to map object
+    if (actionData.mappings && actionData.mappings.length > 0) {
+      const mappingMap: { [key: string]: string } = {};
+      actionData.mappings.forEach((m: any) => {
+        mappingMap[m.target] = m.path;
+      });
+      actionData.mapping = mappingMap;
+    }
+    // Remove the array form before sending
+    delete actionData.mappings;
+
+    this.appService.saveAction(actionData).subscribe(resp => {
+      console.log(resp)
+    })
+  }
 }

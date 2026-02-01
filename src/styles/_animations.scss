@@ -1,0 +1,477 @@
+// =============================================================================
+// AutomateFlow Design System - Animations
+// =============================================================================
+
+@use 'variables' as *;
+
+// -----------------------------------------------------------------------------
+// KEYFRAMES
+// -----------------------------------------------------------------------------
+
+// Fade animations
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+// Scale animations
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    70% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+// Slide animations
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutToRight {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromBottom {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+// Loading animations
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-25%);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+// Status indicator pulse
+@keyframes statusPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba($success-500, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba($success-500, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba($success-500, 0);
+    }
+}
+
+// Flow line animation (for workflow connections)
+@keyframes flowDash {
+    to {
+        stroke-dashoffset: -20;
+    }
+}
+
+// Shake animation (for errors)
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-4px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(4px);
+    }
+}
+
+// Confetti burst (for success celebrations)
+@keyframes confetti {
+    0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-100px) rotate(720deg);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// ANIMATION CLASSES
+// -----------------------------------------------------------------------------
+
+.animate-fadeIn {
+    animation: fadeIn $transition-normal $ease-out-cubic forwards;
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp $transition-normal $ease-out-cubic forwards;
+}
+
+.animate-fadeInDown {
+    animation: fadeInDown $transition-normal $ease-out-cubic forwards;
+}
+
+.animate-scaleIn {
+    animation: scaleIn $transition-normal $ease-out-cubic forwards;
+}
+
+.animate-popIn {
+    animation: popIn 400ms $ease-bounce forwards;
+}
+
+.animate-slideInRight {
+    animation: slideInFromRight $transition-slow $ease-out-cubic forwards;
+}
+
+.animate-slideInLeft {
+    animation: slideInFromLeft $transition-slow $ease-out-cubic forwards;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+    animation: pulse 2s $ease-in-out-cubic infinite;
+}
+
+.animate-bounce {
+    animation: bounce 1s infinite;
+}
+
+.animate-shake {
+    animation: shake 500ms $ease-in-out-cubic;
+}
+
+// -----------------------------------------------------------------------------
+// SKELETON LOADING
+// -----------------------------------------------------------------------------
+
+.skeleton {
+    background: linear-gradient(90deg,
+            var(--bg-tertiary) 25%,
+            var(--bg-hover) 50%,
+            var(--bg-tertiary) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+    border-radius: $radius-md;
+}
+
+.skeleton-text {
+    @extend .skeleton;
+    height: 1em;
+    margin-bottom: 0.5em;
+
+    &:last-child {
+        width: 60%;
+    }
+}
+
+.skeleton-circle {
+    @extend .skeleton;
+    border-radius: $radius-full;
+}
+
+.skeleton-card {
+    @extend .skeleton;
+    height: 120px;
+    border-radius: $radius-xl;
+}
+
+// -----------------------------------------------------------------------------
+// TRANSITION UTILITIES
+// -----------------------------------------------------------------------------
+
+.transition-all {
+    transition: all $transition-normal $ease-in-out-cubic;
+}
+
+.transition-colors {
+    transition: color $transition-fast $ease-in-out-cubic,
+        background-color $transition-fast $ease-in-out-cubic,
+        border-color $transition-fast $ease-in-out-cubic;
+}
+
+.transition-transform {
+    transition: transform $transition-normal $ease-in-out-cubic;
+}
+
+.transition-opacity {
+    transition: opacity $transition-normal $ease-in-out-cubic;
+}
+
+// -----------------------------------------------------------------------------
+// HOVER EFFECTS
+// -----------------------------------------------------------------------------
+
+.hover-lift {
+    transition: transform $transition-normal $ease-out-cubic,
+        box-shadow $transition-normal $ease-out-cubic;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+}
+
+.hover-scale {
+    transition: transform $transition-fast $ease-out-cubic;
+
+    &:hover {
+        transform: scale(1.02);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+.hover-glow {
+    transition: box-shadow $transition-normal $ease-out-cubic;
+
+    &:hover {
+        box-shadow: 0 0 20px rgba($primary-500, 0.3);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// STATUS INDICATORS
+// -----------------------------------------------------------------------------
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: $radius-full;
+
+    &--active {
+        background-color: $success-500;
+        animation: statusPulse 2s infinite;
+    }
+
+    &--inactive {
+        background-color: $neutral-400;
+    }
+
+    &--error {
+        background-color: $error-500;
+    }
+
+    &--pending {
+        background-color: $warning-500;
+        animation: pulse 1.5s infinite;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// WORKFLOW CANVAS ANIMATIONS
+// -----------------------------------------------------------------------------
+
+.flow-connection {
+    stroke-dasharray: 5 5;
+    animation: flowDash 1s linear infinite;
+
+    &--paused {
+        animation-play-state: paused;
+    }
+}
+
+.node-entering {
+    animation: popIn 300ms $ease-bounce forwards;
+}
+
+.node-selected {
+    animation: statusPulse 1.5s infinite;
+}
+
+// -----------------------------------------------------------------------------
+// STAGGERED ANIMATIONS
+// -----------------------------------------------------------------------------
+
+@for $i from 1 through 10 {
+    .stagger-#{$i} {
+        animation-delay: #{$i * 50}ms;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// REDUCED MOTION
+// -----------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

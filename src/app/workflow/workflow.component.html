@@ -56,8 +56,29 @@
             <mat-label>Data</mat-label>
             <input matInput formControlName="payLoad">
           </mat-form-field>
+
+          <!-- Mappings Section -->
+          <div style="margin-top: 10px; margin-bottom: 10px;">
+            <h3>Data Mapping (JSONPath)</h3>
+            <div formArrayName="mappings">
+              <div *ngFor="let map of getMappings(i).controls; let j=index" [formGroupName]="j" style="display: flex; gap: 10px; align-items: baseline;">
+                <mat-form-field appearance="fill">
+                  <mat-label>Target Field</mat-label>
+                  <input matInput formControlName="target" placeholder="e.g. email">
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                  <mat-label>Source Path</mat-label>
+                  <input matInput formControlName="path" placeholder="e.g. $.trigger.body.email">
+                </mat-form-field>
+                <button mat-icon-button color="warn" (click)="removeMapping(i, j)" type="button">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+            <button mat-button color="primary" (click)="addMapping(i)" type="button">+ Add Mapping</button>
+          </div>
         </div>
-        <button mat-raised-button color="primary" (click)="saveAction()">Save</button>
+        <button mat-raised-button color="primary" (click)="saveAction(action)">Save</button>
         <button [disabled]="i==0" mat-raised-button color="warn" (click)="removeAction(i)">Remove Action</button>
         <button mat-raised-button color="primary" (click)="addAction(i+1)">Add Action</button>
       </mat-expansion-panel>

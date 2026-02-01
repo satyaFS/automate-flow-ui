@@ -1,4 +1,15 @@
-<!-- <app-workflow></app-workflow>  -->
-<!-- <app-playground></app-playground> -->
-<!-- <app-workflow-list></app-workflow-list> -->
-<router-outlet></router-outlet>
+<div class="app-container" [class.sidebar-collapsed]="sidebarCollapsed">
+    <!-- Sidebar Navigation -->
+    <app-sidebar [(collapsed)]="sidebarCollapsed"></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Top Navigation Bar -->
+        <app-navbar></app-navbar>
+
+        <!-- Page Content -->
+        <main class="page-content">
+            <router-outlet></router-outlet>
+        </main>
+    </div>
+</div>

@@ -6,23 +6,43 @@ import { AppComponent } from './app.component';
 import { WorkflowComponent } from './workflow/workflow.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {MatRadioModule} from '@angular/material/radio';
+
+// Angular Material Modules
+import { MatRadioModule } from '@angular/material/radio';
 import { MatIconModule } from '@angular/material/icon';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { NgxGraphModule } from '@swimlane/ngx-graph';
-import { PlaygroundComponent } from './playground/playground.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatListModule } from '@angular/material/list';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+
+// Third-party Modules
+import { NgxGraphModule } from '@swimlane/ngx-graph';
+import { HttpClientModule } from '@angular/common/http';
+
+// Feature Components
+import { PlaygroundComponent } from './playground/playground.component';
 import { WorkflowListComponent } from './workflow-list/workflow-list.component';
 import { AddWorkflowDialogComponent } from './add-workflow-dialog/add-workflow-dialog.component';
-import { MatDialogModule } from '@angular/material/dialog';
-import { HttpClientModule } from '@angular/common/http';
+
+// Core Components
+import { SidebarComponent } from './core/components/sidebar/sidebar.component';
+import { NavbarComponent } from './core/components/navbar/navbar.component';
+
+// Services
+import { ThemeService } from './core/services/theme.service';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -30,6 +50,8 @@ import { HttpClientModule } from '@angular/common/http';
     PlaygroundComponent,
     WorkflowListComponent,
     AddWorkflowDialogComponent,
+    SidebarComponent,
+    NavbarComponent,
   ],
   imports: [
     BrowserModule,
@@ -37,6 +59,9 @@ import { HttpClientModule } from '@angular/common/http';
     FormsModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
+    HttpClientModule,
+
+    // Angular Material
     MatRadioModule,
     MatIconModule,
     MatInputModule,
@@ -44,15 +69,24 @@ import { HttpClientModule } from '@angular/common/http';
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    NgxGraphModule,
     MatCardModule,
     MatExpansionModule,
     MatFormFieldModule,
     MatListModule,
     MatDialogModule,
-    HttpClientModule
+    MatButtonModule,
+    MatTooltipModule,
+    MatMenuModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule,
+    MatSlideToggleModule,
+
+    // Third-party
+    NgxGraphModule,
   ],
-  providers: [],
+  providers: [
+    ThemeService,
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

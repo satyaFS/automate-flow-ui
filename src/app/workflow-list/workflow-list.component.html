@@ -1,21 +1,126 @@
-<div class="workflow-list-container">
-    <div class="workflow-list-header">
-      <button mat-mini-fab color="primary" (click)="openAddWorkflowDialog()">
-        Add Workflow
+<div class="workflow-list-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <h1 class="page-header__title">Workflows</h1>
+      <p class="page-header__subtitle">
+        {{ workflows.length }} workflows · {{ getActiveCount() }} active
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--primary" (click)="openAddWorkflowDialog()">
+        <mat-icon>add</mat-icon>
+        New Workflow
       </button>
     </div>
-    <div class="workflow-list">
-      <mat-card (click)="navigateToWorkflow(workflow.workflowId)" *ngFor="let workflow of workflows" class="workflow-card">
-        <mat-card-header>
-          <mat-icon matListIcon [ngStyle]="{'color': workflow.status === 'Active' ? 'green' : 'red'}">
-            {{ workflow.status === 'Active' ? 'check_circle' : 'cancel' }}
-          </mat-icon>
-          <mat-card-title>{{ workflow.workflowName }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <p>{{ workflow.workflowDescription }}</p>
-          <!-- Add more workflow details or actions as needed -->
-        </mat-card-content>
-      </mat-card>
+  </div>
+
+  <!-- Filters Bar -->
+  <div class="filters-bar">
+    <div class="filters-bar__search">
+      <mat-icon>search</mat-icon>
+      <input type="text" placeholder="Search workflows..." [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()" />
+    </div>
+
+    <div class="filters-bar__tabs">
+      <button class="filter-tab" [class.active]="statusFilter === 'all'" (click)="onStatusFilterChange('all')">
+        All
+      </button>
+      <button class="filter-tab" [class.active]="statusFilter === 'active'" (click)="onStatusFilterChange('active')">
+        <span class="status-dot status-dot--active"></span>
+        Active
+      </button>
+      <button class="filter-tab" [class.active]="statusFilter === 'inactive'"
+        (click)="onStatusFilterChange('inactive')">
+        <span class="status-dot status-dot--inactive"></span>
+        Inactive
+      </button>
+    </div>
+
+    <div class="filters-bar__view-toggle">
+      <button class="view-toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'"
+        aria-label="Grid view">
+        <mat-icon>grid_view</mat-icon>
+      </button>
+      <button class="view-toggle-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'"
+        aria-label="List view">
+        <mat-icon>view_list</mat-icon>
+      </button>
     </div>
   </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="skeleton-grid">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && filteredWorkflows.length === 0">
+    <div class="empty-state__icon">
+      <mat-icon>bolt</mat-icon>
+    </div>
+    <h3 class="empty-state__title">
+      {{ searchQuery || statusFilter !== 'all' ? 'No workflows found' : 'No workflows yet' }}
+    </h3>
+    <p class="empty-state__description">
+      {{ searchQuery || statusFilter !== 'all'
+      ? 'Try adjusting your search or filter to find what you\'re looking for.'
+      : 'Create your first workflow to start automating tasks.' }}
+    </p>
+    <button class="btn btn--primary" *ngIf="!searchQuery && statusFilter === 'all'" (click)="openAddWorkflowDialog()">
+      <mat-icon>add</mat-icon>
+      Create Workflow
+    </button>
+  </div>
+
+  <!-- Workflow Grid -->
+  <div class="workflow-grid" [class.workflow-grid--list]="viewMode === 'list'"
+    *ngIf="!isLoading && filteredWorkflows.length > 0">
+    <div class="workflow-card" *ngFor="let workflow of filteredWorkflows; let i = index" [class.animate-fadeInUp]="true"
+      [style.animation-delay.ms]="i * 50" (click)="navigateToWorkflow(workflow.workflowId)">
+      <div class="workflow-card__header">
+        <div class="workflow-card__icon">
+          <mat-icon>bolt</mat-icon>
+        </div>
+        <div class="workflow-card__status">
+          <button class="status-toggle" [class.status-toggle--active]="workflow.status === 'Active'"
+            (click)="toggleWorkflowStatus(workflow, $event)"
+            [attr.aria-label]="workflow.status === 'Active' ? 'Deactivate workflow' : 'Activate workflow'">
+            <span class="status-toggle__dot"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="workflow-card__content">
+        <h3 class="workflow-card__title">{{ workflow.workflowName }}</h3>
+        <p class="workflow-card__description">{{ workflow.workflowDescription || 'No description' }}</p>
+      </div>
+
+      <div class="workflow-card__footer">
+        <div class="workflow-card__stats">
+          <span class="workflow-card__stat" *ngIf="workflow.lastRun">
+            <mat-icon>schedule</mat-icon>
+            Last run: {{ workflow.lastRun | date:'short' }}
+          </span>
+          <span class="workflow-card__stat" *ngIf="workflow.runCount !== undefined">
+            <mat-icon>play_arrow</mat-icon>
+            {{ workflow.runCount }} runs
+          </span>
+        </div>
+        <div class="workflow-card__actions">
+          <button class="workflow-card__action-btn" (click)="duplicateWorkflow(workflow, $event)"
+            matTooltip="Duplicate">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+          <button class="workflow-card__action-btn workflow-card__action-btn--danger"
+            (click)="deleteWorkflow(workflow, $event)" matTooltip="Delete">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

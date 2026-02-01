@@ -1,0 +1,39 @@
+<header class="navbar">
+    <!-- Search Bar -->
+    <div class="navbar__search">
+        <mat-icon class="navbar__search-icon">search</mat-icon>
+        <input type="text" class="navbar__search-input" placeholder="Search workflows... (Ctrl+K)"
+            [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" />
+        <kbd class="navbar__search-shortcut">⌘K</kbd>
+    </div>
+
+    <!-- Actions -->
+    <div class="navbar__actions">
+        <!-- Quick Create -->
+        <button class="btn btn--primary" (click)="createWorkflow()">
+            <mat-icon>add</mat-icon>
+            <span class="hide-mobile">New Workflow</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button class="navbar__action-btn" (click)="toggleTheme()"
+            [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
+            <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
+
+        <!-- Notifications -->
+        <button class="navbar__action-btn navbar__notifications" (click)="openNotifications()">
+            <mat-icon>notifications</mat-icon>
+            <span class="navbar__notification-badge" *ngIf="notificationCount > 0">
+                {{ notificationCount }}
+            </span>
+        </button>
+
+        <!-- User Avatar -->
+        <button class="navbar__user-btn" (click)="openUserMenu()">
+            <div class="navbar__user-avatar">
+                <mat-icon>person</mat-icon>
+            </div>
+        </button>
+    </div>
+</header>

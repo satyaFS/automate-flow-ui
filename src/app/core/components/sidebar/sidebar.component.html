@@ -1,0 +1,45 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <!-- Logo Section -->
+  <div class="sidebar__header">
+    <div class="sidebar__logo" (click)="navigate('/dashboard')">
+      <div class="sidebar__logo-icon">
+        <mat-icon>bolt</mat-icon>
+      </div>
+      <span class="sidebar__logo-text" *ngIf="!collapsed">AutomateFlow</span>
+    </div>
+    <button class="sidebar__toggle" (click)="toggleCollapse()" [attr.aria-label]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+      <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+    </button>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar__nav">
+    <ul class="sidebar__nav-list">
+      <li *ngFor="let item of navItems" class="sidebar__nav-item">
+        <a
+          class="sidebar__nav-link"
+          [class.active]="isActive(item.route)"
+          (click)="navigate(item.route)"
+          [attr.title]="collapsed ? item.label : null"
+        >
+          <mat-icon class="sidebar__nav-icon">{{ item.icon }}</mat-icon>
+          <span class="sidebar__nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+          <span class="sidebar__nav-badge" *ngIf="item.badge && !collapsed">{{ item.badge }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Footer / User Section -->
+  <div class="sidebar__footer">
+    <div class="sidebar__user">
+      <div class="sidebar__user-avatar">
+        <mat-icon>person</mat-icon>
+      </div>
+      <div class="sidebar__user-info" *ngIf="!collapsed">
+        <span class="sidebar__user-name">User</span>
+        <span class="sidebar__user-plan">Free Plan</span>
+      </div>
+    </div>
+  </div>
+</aside>
